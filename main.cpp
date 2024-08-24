@@ -6,7 +6,7 @@
 #include <string>
 
 // Include the game headers
-#include "code/pacman.cpp" // Include the Pacman game logic
+#include "code/pacman.cpp"     // Include the Pacman game logic
 #include "snake/src/snake.cpp" // Include the Snake game logic
 
 // Developer names and GitHub links
@@ -14,8 +14,7 @@ std::map<std::string, std::string> developersMap = {
     {"Pujan Neupane", "https://shorturl.at/A8xH2"},
     {"Sujal Karki", "https://github.com/skarkiiii"},
     {"Prasamsha Adhikari", "https://github.com/PrasamshaAdhikari"},
-    {"Samridhee Ghimire", "https://github.com/samridheeghimire"}
-};
+    {"Samridhee Ghimire", "https://github.com/samridheeghimire"}};
 
 enum class MenuState
 {
@@ -181,6 +180,19 @@ int main()
                             }
                             if (i == 1)
                             {
+                                window.close();
+                                SnakeGame game;
+                                game.run();
+                            }
+                            if (i == 2)
+                            {
+                                window.close();
+                                SnakeGame game;
+                                game.run();
+                            }
+                            if (i == 3)
+                            {
+                                window.close();
                                 SnakeGame game;
                                 game.run();
                             }
