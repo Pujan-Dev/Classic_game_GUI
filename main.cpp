@@ -1,24 +1,73 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include <map>
 #include <string>
 #include <cmath>
+
+// Include the game headers
+#include "code/pacman.cpp"     // Include the Pacman game logic
+#include "snake/src/snake.cpp" // Include the Snake game logic
+#include "Pong/src/PongGame.cpp"
+#include "Flappy_bird/main.cpp"
 
 enum class MenuState
 {
     MAIN,
     DEVS
 };
+void drawDynamicGradientBackground(sf::RenderWindow &window, sf::Clock &clock)
+{
+    // Create a vertex array with 4 vertices
+    sf::VertexArray gradient(sf::TrianglesStrip, 4);
 
-void handleButtonHover(sf::RectangleShape &button, sf::Vector2i mousePos)
+    // Calculate time elapsed to create a dynamic effect
+    float time = clock.getElapsedTime().asSeconds();
+
+    // Reduce the speed of the gradient effect by dividing the time variable
+    float speedFactor = 0.2f; // Lower value means slower gradient change
+    float adjustedTime = time * speedFactor;
+
+    // Generate dynamic gray-blue colors based on adjusted time
+    sf::Color topColor(
+        static_cast<sf::Uint8>(50 + 50 * std::sin(adjustedTime * 0.5f)), // Gray-blue R
+        static_cast<sf::Uint8>(60 + 50 * std::cos(adjustedTime * 0.5f)), // Gray-blue G
+        static_cast<sf::Uint8>(70 + 50 * std::sin(adjustedTime * 0.7f))  // Gray-blue B
+    );
+
+    sf::Color bottomColor(
+        static_cast<sf::Uint8>(50 + 50 * std::cos(adjustedTime * 0.5f)), // Gray-blue R
+        static_cast<sf::Uint8>(60 + 50 * std::sin(adjustedTime * 0.5f)), // Gray-blue G
+        static_cast<sf::Uint8>(70 + 50 * std::cos(adjustedTime * 0.7f))  // Gray-blue B
+    );
+
+    // Set the vertices with positions and colors
+    gradient[0].position = sf::Vector2f(0, 0);
+    gradient[0].color = topColor;
+
+    gradient[1].position = sf::Vector2f(window.getSize().x, 0);
+    gradient[1].color = topColor;
+
+    gradient[2].position = sf::Vector2f(0, window.getSize().y);
+    gradient[2].color = bottomColor;
+
+    gradient[3].position = sf::Vector2f(window.getSize().x, window.getSize().y);
+    gradient[3].color = bottomColor;
+
+    // Draw the gradient
+    window.draw(gradient);
+}
+
+
+void handleButtonHover(sf::Text &button, sf::Vector2i mousePos)
 {
     if (button.getGlobalBounds().contains(mousePos.x, mousePos.y))
     {
-        button.setFillColor(sf::Color(72, 128, 250)); // Change color on hover
+        button.setFillColor(sf::Color(72, 128, 250));
     }
     else
     {
-        button.setFillColor(sf::Color(100, 100, 255)); // Default color
+        button.setFillColor(sf::Color::White);
     }
 }
 
@@ -47,25 +96,20 @@ void animateTitleOnHover(sf::Text &title, sf::Clock &clock, sf::Vector2i mousePo
     }
 }
 
-void drawRoundedRect(sf::RenderWindow &window, sf::RectangleShape &rect, float radius)
+void setTextProperties(sf::Text &text, sf::Font &font, const std::string &str, unsigned int size, sf::Color color, float outlineThickness, sf::Color outlineColor)
 {
-    sf::ConvexShape roundedRect;
-    roundedRect.setPointCount(12);
-    for (int i = 0; i < 12; ++i)
-    {
-        float angle = i * (3.14159f / 6);
-        float x = radius * cos(angle);
-        float y = radius * sin(angle);
-        roundedRect.setPoint(i, sf::Vector2f(x + rect.getSize().x / 2, y + rect.getSize().y / 2));
-    }
-    roundedRect.setPosition(rect.getPosition());
-    roundedRect.setFillColor(rect.getFillColor());
-    window.draw(roundedRect);
+    text.setFont(font);
+    text.setString(str);
+    text.setCharacterSize(size);
+    text.setFillColor(color);
+    text.setOutlineThickness(outlineThickness);
+    text.setOutlineColor(outlineColor);
 }
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(800, 600), "Classic Games Menu");
+    sf::Clock clock;
 
     sf::Font font;
     if (!font.loadFromFile("flappy.ttf"))
@@ -74,29 +118,31 @@ int main()
         return -1;
     }
 
-    sf::Text title("Classic Games", font, 40);
-    title.setFillColor(sf::Color::Yellow);
+    sf::Text title;
+    setTextProperties(title, font, "Classic Games", 60, sf::Color::Yellow, 2.0f, sf::Color::Black);
     title.setPosition(window.getSize().x / 2 - title.getGlobalBounds().width / 2, 50);
 
-    std::vector<sf::RectangleShape> buttons;
+    std::vector<sf::Text> menu;
     std::vector<std::string> menuOptions = {"Pacman", "Snake", "Pong", "Flappy Bird", "Quit"};
 
     for (size_t i = 0; i < menuOptions.size(); ++i)
     {
-        sf::RectangleShape button(sf::Vector2f(200, 50));
-        button.setFillColor(sf::Color(100, 100, 255));
-        button.setPosition(window.getSize().x / 2 - button.getSize().x / 2, 200 + i * 60);
-        buttons.push_back(button);
+        sf::Text item;
+        setTextProperties(item, font, menuOptions[i], 30, sf::Color::White, 2.0f, sf::Color::Black);
+        item.setPosition(window.getSize().x / 2 - item.getGlobalBounds().width / 2, 200 + i * 60);
+        menu.push_back(item);
     }
 
-    sf::Text devsButton("Devs", font, 20);
-    devsButton.setFillColor(sf::Color(255, 165, 0));
+    sf::Text devsButton;
+    setTextProperties(devsButton, font, "Devs", 30, sf::Color(255, 165, 0), 2.0f, sf::Color::Black);
     devsButton.setPosition(50, 500);
 
-    sf::Text backButton("Back", font, 30);
+    sf::Text backButton;
+    setTextProperties(backButton, font, "Back", 30, sf::Color::Red, 2.0f, sf::Color::Black);
     backButton.setPosition(50, 500);
 
-    sf::Text devs("Developers", font, 30);
+    sf::Text devs;
+    setTextProperties(devs, font, "Developers", 40, sf::Color::Yellow, 2.0f, sf::Color::Black);
     devs.setPosition(window.getSize().x / 2 - devs.getGlobalBounds().width / 2, 50);
 
     std::vector<sf::Text> developerTexts;
@@ -104,14 +150,14 @@ int main()
     std::vector<std::string> developerNames = {"Pujan Neupane", "Sujal Karki", "Prasamsha Adhikari", "Samridhee Ghimire"};
     for (const auto &name : developerNames)
     {
-        sf::Text devText(name, font, 20);
+        sf::Text devText;
+        setTextProperties(devText, font, name, 20, sf::Color::White, 2.0f, sf::Color::Black);
         devText.setPosition(window.getSize().x / 2 - devText.getGlobalBounds().width / 2, yOffset);
         developerTexts.push_back(devText);
-        yOffset += 40; // Adjust spacing between names
+        yOffset += 50; // Adjust spacing between names
     }
 
     MenuState menuState = MenuState::MAIN;
-    sf::Clock clock;
     bool mouseHeld = false;
 
     while (window.isOpen())
@@ -138,9 +184,9 @@ int main()
             {
                 if (menuState == MenuState::MAIN)
                 {
-                    for (size_t i = 0; i < buttons.size(); ++i)
+                    for (size_t i = 0; i < menu.size(); ++i)
                     {
-                        if (buttons[i].getGlobalBounds().contains(mousePos.x, mousePos.y))
+                        if (menu[i].getGlobalBounds().contains(mousePos.x, mousePos.y))
                         {
                             if (i == 0)
                             {
@@ -188,7 +234,10 @@ int main()
             }
         }
 
-        window.clear(sf::Color(200, 200, 255)); // Gradient background
+        window.clear();
+
+        // Draw dynamic gradient background
+        drawDynamicGradientBackground(window, clock);
 
         if (menuState == MenuState::MAIN)
         {
@@ -196,15 +245,10 @@ int main()
 
             window.draw(title);
 
-            for (size_t i = 0; i < buttons.size(); ++i)
+            for (auto &item : menu)
             {
-                handleButtonHover(buttons[i], mousePos);
-                drawRoundedRect(window, buttons[i], 15.0f); // Draw rounded buttons
-                sf::Text buttonText(menuOptions[i], font, 25);
-                buttonText.setFillColor(sf::Color::White);
-                buttonText.setPosition(buttons[i].getPosition().x + buttons[i].getSize().x / 2 - buttonText.getGlobalBounds().width / 2,
-                                       buttons[i].getPosition().y + buttons[i].getSize().y / 2 - buttonText.getGlobalBounds().height / 2);
-                window.draw(buttonText);
+                handleButtonHover(item, mousePos);
+                window.draw(item);
             }
 
             handleButtonHover(devsButton, mousePos);
