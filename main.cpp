@@ -1,20 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
-#include <cmath>
-#include <map>
 #include <string>
-// Include the game headers
-#include "code/pacman.cpp"     // Include the Pacman game logic
-#include "snake/src/snake.cpp" // Include the Snake game logic
-#include "Pong/src/PongGame.cpp"
-#include "Flappy_bird/main.cpp"
-// Developer names and GitHub links
-std::map<std::string, std::string> developersMap = {
-    {"Pujan Neupane", "https://shorturl.at/A8xH2"},
-    {"Sujal Karki", "https://github.com/skarkiiii"},
-    {"Prasamsha Adhikari", "https://github.com/PrasamshaAdhikari"},
-    {"Samridhee Ghimire", "https://github.com/samridheeghimire"}};
+#include <cmath>
 
 enum class MenuState
 {
@@ -22,35 +10,15 @@ enum class MenuState
     DEVS
 };
 
-void openDeveloperLink(const std::string &url)
+void handleButtonHover(sf::RectangleShape &button, sf::Vector2i mousePos)
 {
-    std::string command;
-#if defined(__linux__)
-    command = "xdg-open " + url;
-#elif defined(_WIN32)
-    command = "start " + url;
-#elif defined(__APPLE__)
-    command = "open " + url;
-#else
-    std::cerr << "Unsupported OS" << std::endl;
-    return;
-#endif
-    system(command.c_str());
-}
-
-void handleDeveloperClick(sf::Vector2i mousePos, const std::vector<sf::Text> &developerTexts)
-{
-    for (const auto &text : developerTexts)
+    if (button.getGlobalBounds().contains(mousePos.x, mousePos.y))
     {
-        if (text.getGlobalBounds().contains(mousePos.x, mousePos.y))
-        {
-            auto it = developersMap.find(text.getString());
-            if (it != developersMap.end())
-            {
-                openDeveloperLink(it->second);
-                return;
-            }
-        }
+        button.setFillColor(sf::Color(72, 128, 250)); // Change color on hover
+    }
+    else
+    {
+        button.setFillColor(sf::Color(100, 100, 255)); // Default color
     }
 }
 
@@ -79,16 +47,20 @@ void animateTitleOnHover(sf::Text &title, sf::Clock &clock, sf::Vector2i mousePo
     }
 }
 
-void handleButtonHover(sf::Text &button, sf::Vector2i mousePos)
+void drawRoundedRect(sf::RenderWindow &window, sf::RectangleShape &rect, float radius)
 {
-    if (button.getGlobalBounds().contains(mousePos.x, mousePos.y))
+    sf::ConvexShape roundedRect;
+    roundedRect.setPointCount(12);
+    for (int i = 0; i < 12; ++i)
     {
-        button.setFillColor(sf::Color(72, 128, 250));
+        float angle = i * (3.14159f / 6);
+        float x = radius * cos(angle);
+        float y = radius * sin(angle);
+        roundedRect.setPoint(i, sf::Vector2f(x + rect.getSize().x / 2, y + rect.getSize().y / 2));
     }
-    else
-    {
-        button.setFillColor(sf::Color::White);
-    }
+    roundedRect.setPosition(rect.getPosition());
+    roundedRect.setFillColor(rect.getFillColor());
+    window.draw(roundedRect);
 }
 
 int main()
@@ -96,7 +68,7 @@ int main()
     sf::RenderWindow window(sf::VideoMode(800, 600), "Classic Games Menu");
 
     sf::Font font;
-    if (!font.loadFromFile("src/SuperPixel.ttf"))
+    if (!font.loadFromFile("flappy.ttf"))
     {
         std::cerr << "Could not load font!" << std::endl;
         return -1;
@@ -106,18 +78,15 @@ int main()
     title.setFillColor(sf::Color::Yellow);
     title.setPosition(window.getSize().x / 2 - title.getGlobalBounds().width / 2, 50);
 
-    std::vector<sf::Text> menu;
+    std::vector<sf::RectangleShape> buttons;
     std::vector<std::string> menuOptions = {"Pacman", "Snake", "Pong", "Flappy Bird", "Quit"};
 
     for (size_t i = 0; i < menuOptions.size(); ++i)
     {
-        sf::Text item;
-        item.setFont(font);
-        item.setString(menuOptions[i]);
-        item.setCharacterSize(25);
-        item.setFillColor(sf::Color::White);
-        item.setPosition(window.getSize().x / 2 - item.getGlobalBounds().width / 2, 200 + i * 60);
-        menu.push_back(item);
+        sf::RectangleShape button(sf::Vector2f(200, 50));
+        button.setFillColor(sf::Color(100, 100, 255));
+        button.setPosition(window.getSize().x / 2 - button.getSize().x / 2, 200 + i * 60);
+        buttons.push_back(button);
     }
 
     sf::Text devsButton("Devs", font, 20);
@@ -132,9 +101,10 @@ int main()
 
     std::vector<sf::Text> developerTexts;
     float yOffset = 200;
-    for (const auto &pair : developersMap)
+    std::vector<std::string> developerNames = {"Pujan Neupane", "Sujal Karki", "Prasamsha Adhikari", "Samridhee Ghimire"};
+    for (const auto &name : developerNames)
     {
-        sf::Text devText(pair.first, font, 20);
+        sf::Text devText(name, font, 20);
         devText.setPosition(window.getSize().x / 2 - devText.getGlobalBounds().width / 2, yOffset);
         developerTexts.push_back(devText);
         yOffset += 40; // Adjust spacing between names
@@ -168,9 +138,9 @@ int main()
             {
                 if (menuState == MenuState::MAIN)
                 {
-                    for (size_t i = 0; i < menu.size(); ++i)
+                    for (size_t i = 0; i < buttons.size(); ++i)
                     {
-                        if (menu[i].getGlobalBounds().contains(mousePos.x, mousePos.y))
+                        if (buttons[i].getGlobalBounds().contains(mousePos.x, mousePos.y))
                         {
                             if (i == 0)
                             {
@@ -214,15 +184,11 @@ int main()
                     {
                         menuState = MenuState::MAIN;
                     }
-                    else
-                    {
-                        handleDeveloperClick(mousePos, developerTexts);
-                    }
                 }
             }
         }
 
-        window.clear();
+        window.clear(sf::Color(200, 200, 255)); // Gradient background
 
         if (menuState == MenuState::MAIN)
         {
@@ -230,10 +196,15 @@ int main()
 
             window.draw(title);
 
-            for (auto &item : menu)
+            for (size_t i = 0; i < buttons.size(); ++i)
             {
-                handleButtonHover(item, mousePos);
-                window.draw(item);
+                handleButtonHover(buttons[i], mousePos);
+                drawRoundedRect(window, buttons[i], 15.0f); // Draw rounded buttons
+                sf::Text buttonText(menuOptions[i], font, 25);
+                buttonText.setFillColor(sf::Color::White);
+                buttonText.setPosition(buttons[i].getPosition().x + buttons[i].getSize().x / 2 - buttonText.getGlobalBounds().width / 2,
+                                       buttons[i].getPosition().y + buttons[i].getSize().y / 2 - buttonText.getGlobalBounds().height / 2);
+                window.draw(buttonText);
             }
 
             handleButtonHover(devsButton, mousePos);

@@ -24,6 +24,8 @@ public:
         shape.setSize({paddleWidth, paddleHeight});
         shape.setPosition(x, y);
         shape.setFillColor(sf::Color::White);
+        shape.setOutlineColor(sf::Color::Black);
+        shape.setOutlineThickness(6.0f);
     }
 
     void moveUp()
@@ -64,6 +66,8 @@ public:
         shape.setRadius(ballRadius);
         shape.setPosition(x, y);
         shape.setFillColor(sf::Color::White);
+        shape.setOutlineColor(sf::Color::Black);
+        shape.setOutlineThickness(2.0f);
         velocity = {-ballSpeed, -ballSpeed};
     }
 
@@ -141,7 +145,6 @@ public:
         rightScoreText.setCharacterSize(50);
         leftScoreText.setPosition(200, 20);
         rightScoreText.setPosition(windowWidth - 250, 20);
-        // set left score and right scre zero and display them
 
         leftScore = 0;
         rightScore = 0;
@@ -186,7 +189,6 @@ private:
     int leftScore;
     int rightScore;
 };
-
 class Game
 {
 public:
@@ -234,6 +236,13 @@ public:
         quitText.setFillColor(sf::Color::White);
         quitText.setString("Quit");
         quitText.setPosition(windowWidth / 2 - 35, windowHeight / 2 + 130);
+
+        // Initialize center hollow circle
+        centerCircle.setRadius(25.0f); // Adjust the radius as needed
+        centerCircle.setFillColor(sf::Color(0, 0, 0, 0.5)); // Fully transparent fill color
+        centerCircle.setOutlineColor(sf::Color::White); // Outline color
+        centerCircle.setOutlineThickness(3.0f); // Thickness of the outline
+        centerCircle.setPosition(windowWidth / 2 - centerCircle.getRadius(), windowHeight / 2 - centerCircle.getRadius());
     }
 
     void run()
@@ -266,6 +275,8 @@ private:
     sf::RectangleShape quitButton;
     sf::Text restartText;
     sf::Text quitText;
+
+    sf::CircleShape centerCircle; // Hollow circle for visual effect
 
     void handleEvents()
     {
@@ -317,14 +328,14 @@ private:
             float ballCenterY = ball.getY() + ballRadius;
 
             // Move AI paddle towards the ball
-            if (ballCenterY < aiPaddleCenterY - 5.0f) // Move up
+            if (ballCenterY < aiPaddleCenterY - 10.0f) // Move up
             {
                 if (aiPaddle.getBounds().top > 0)
                 {
                     aiPaddle.moveUp();
                 }
             }
-            else if (ballCenterY > aiPaddleCenterY + 5.0f) // Move down
+            else if (ballCenterY > aiPaddleCenterY + 10.0f) // Move down
             {
                 if (aiPaddle.getBounds().top < windowHeight - paddleHeight)
                 {
@@ -363,7 +374,14 @@ private:
 
     void render()
     {
-        window.clear(sf::Color::Black);
+        window.clear(sf::Color(56, 56, 56));
+
+        sf::Vertex line[] =
+        {
+            sf::Vertex(sf::Vector2f(windowWidth / 2, 0), sf::Color::White),
+            sf::Vertex(sf::Vector2f(windowWidth / 2, windowHeight), sf::Color::White)
+        };
+        window.draw(line, 8, sf::Lines);
 
         if (gameState == GameState::Playing)
         {
@@ -371,6 +389,7 @@ private:
             aiPaddle.draw(window);
             ball.draw(window);
             score.draw(window);
+            window.draw(centerCircle); // Draw the center hollow circle
         }
         else if (gameState == GameState::GameOver)
         {
@@ -402,3 +421,10 @@ private:
         ball.reset();
     }
 };
+
+// int main()
+// {
+//     Game game;
+//     game.run();
+//     return 0;
+// }
