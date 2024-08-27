@@ -151,7 +151,7 @@ int main()
     for (const auto &name : developerNames)
     {
         sf::Text devText;
-        setTextProperties(devText, font, name, 20, sf::Color::White, 2.0f, sf::Color::Black);
+        setTextProperties(devText, font, name, 30, sf::Color::White, 2.0f, sf::Color::Black);
         devText.setPosition(window.getSize().x / 2 - devText.getGlobalBounds().width / 2, yOffset);
         developerTexts.push_back(devText);
         yOffset += 50; // Adjust spacing between names
