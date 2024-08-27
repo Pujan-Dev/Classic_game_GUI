@@ -4,11 +4,11 @@
 #include <cmath>
 #include <map>
 #include <string>
-
 // Include the game headers
 #include "code/pacman.cpp"     // Include the Pacman game logic
 #include "snake/src/snake.cpp" // Include the Snake game logic
-
+#include "Pong/src/PongGame.cpp"
+#include "Flappy_bird/main.cpp"
 // Developer names and GitHub links
 std::map<std::string, std::string> developersMap = {
     {"Pujan Neupane", "https://shorturl.at/A8xH2"},
@@ -107,7 +107,7 @@ int main()
     title.setPosition(window.getSize().x / 2 - title.getGlobalBounds().width / 2, 50);
 
     std::vector<sf::Text> menu;
-    std::vector<std::string> menuOptions = {"Pacman", "Snake", "Tetris", "Flappy Bird", "Quit"};
+    std::vector<std::string> menuOptions = {"Pacman", "Snake", "Pong", "Flappy Bird", "Quit"};
 
     for (size_t i = 0; i < menuOptions.size(); ++i)
     {
@@ -187,14 +187,14 @@ int main()
                             if (i == 2)
                             {
                                 window.close();
-                                SnakeGame game;
+                                Game game;
                                 game.run();
                             }
                             if (i == 3)
                             {
                                 window.close();
-                                SnakeGame game;
-                                game.run();
+                                FloppyBirdGame FLAPPY_BIRD;
+                                FLAPPY_BIRD.run();
                             }
                             else if (i == 4)
                             {
