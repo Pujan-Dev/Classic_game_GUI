@@ -7,7 +7,7 @@
 
 // Include the game headers
 #include "code/pacman.cpp"     // Include the Pacman game logic
-#include "snake/src/snake.cpp" // Include the Snake game logic
+#include "snake/src/main.cpp" // Include the Snake game logic
 #include "Pong/src/PongGame.cpp"
 #include "Flappy_bird/main.cpp"
 

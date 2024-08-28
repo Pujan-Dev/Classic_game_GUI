@@ -57,7 +57,6 @@ public:
 private:
     sf::RectangleShape shape;
 };
-
 class Ball
 {
 public:
@@ -189,6 +188,7 @@ private:
     int leftScore;
     int rightScore;
 };
+
 class Game
 {
 public:
@@ -316,61 +316,62 @@ private:
             }
         }
     }
-
-    void update()
+   void update()
+{
+    if (gameState == GameState::Playing)
     {
-        if (gameState == GameState::Playing)
+        ball.update();
+
+        // AI movement with reduced speed
+        float aiPaddleSpeed = paddleSpeed * 0.3f; // Adjust AI paddle speed here (slower)
+        float aiPaddleCenterY = aiPaddle.getBounds().top + aiPaddle.getBounds().height / 2;
+        float ballCenterY = ball.getY() + ballRadius;
+
+        // Move AI paddle towards the ball with the adjusted speed
+        if (ballCenterY < aiPaddleCenterY - aiPaddleSpeed) // Move up
         {
-            ball.update();
-
-            // Simple AI movement
-            float aiPaddleCenterY = aiPaddle.getBounds().top + aiPaddle.getBounds().height / 2;
-            float ballCenterY = ball.getY() + ballRadius;
-
-            // Move AI paddle towards the ball
-            if (ballCenterY < aiPaddleCenterY - 10.0f) // Move up
+            if (aiPaddle.getBounds().top > 0)
             {
-                if (aiPaddle.getBounds().top > 0)
-                {
-                    aiPaddle.moveUp();
-                }
-            }
-            else if (ballCenterY > aiPaddleCenterY + 10.0f) // Move down
-            {
-                if (aiPaddle.getBounds().top < windowHeight - paddleHeight)
-                {
-                    aiPaddle.moveDown();
-                }
-            }
-
-            if (ball.getBounds().intersects(playerPaddle.getBounds()))
-            {
-                ball.bounceX();
-                ball.setPosition(playerPaddle.getBounds().left + playerPaddle.getBounds().width, ball.getY());
-            }
-
-            if (ball.getBounds().intersects(aiPaddle.getBounds()))
-            {
-                ball.bounceX();
-                ball.setPosition(aiPaddle.getBounds().left - ballRadius * 2, ball.getY());
-            }
-
-            if (ball.getX() < 0)
-            {
-                score.updateScore(false);
-                ball.reset();
-                scoreSound.play();
-                checkGameOver();
-            }
-            else if (ball.getX() > windowWidth)
-            {
-                score.updateScore(true);
-                ball.reset();
-                scoreSound.play();
-                checkGameOver();
+                aiPaddle.moveUp();
             }
         }
+        else if (ballCenterY > aiPaddleCenterY + aiPaddleSpeed) // Move down
+        {
+            if (aiPaddle.getBounds().top < windowHeight - paddleHeight)
+            {
+                aiPaddle.moveDown();
+            }
+        }
+
+        // Collision and scoring logic
+        if (ball.getBounds().intersects(playerPaddle.getBounds()))
+        {
+            ball.bounceX();
+            ball.setPosition(playerPaddle.getBounds().left + playerPaddle.getBounds().width, ball.getY());
+        }
+
+        if (ball.getBounds().intersects(aiPaddle.getBounds()))
+        {
+            ball.bounceX();
+            ball.setPosition(aiPaddle.getBounds().left - ballRadius * 2, ball.getY());
+        }
+
+        if (ball.getX() < 0)
+        {
+            score.updateScore(false);
+            ball.reset();
+            scoreSound.play();
+            checkGameOver();
+        }
+        else if (ball.getX() > windowWidth)
+        {
+            score.updateScore(true);
+            ball.reset();
+            scoreSound.play();
+            checkGameOver();
+        }
     }
+}
 
     void render()
     {
